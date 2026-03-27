@@ -1,0 +1,95 @@
+┌─────────────────────────────────────────────────────┐
+│     WIRING & CONNECTOR SPECIFICATIONS               │
+└─────────────────────────────────────────────────────┘
+
+HIGH CURRENT PATH (30A - Battery to Boost Module):
+═════════════════════════════════════════════════════
+Cable size:        10 AWG (6mm²) or thicker
+Insulation:        600V rated
+Connector:         XT90 or Anderson PowerPole
+Length:            Keep < 1m to minimize loss
+Current rating:    Minimum 40A (safety margin)
+
+Example:
+  Battery+ ─[10 AWG red]─→ [XT90 male] ─→ Boost module
+  Battery- ─[10 AWG black]─→ [XT90 female] ─→ Boost module
+
+
+LOW VOLTAGE SIGNAL PATHS (ACS758, V divider):
+═════════════════════════════════════════════════
+Cable size:        20-22 AWG (0.5-0.75mm²)
+Insulation:        300V rated
+Connectors:        Molex or JST (optional)
+Shielding:         Keep away from high-current paths
+Length:            Keep < 50cm if possible
+Impedance:         Not critical (slow signals)
+
+Example connections:
+  ACS758 VOUT ─[22 AWG shielded]─→ ESP32 GPIO 34
+  V divider OUT ─[22 AWG shielded]─→ ESP32 GPIO 35
+
+
+OneWire (DS18B20):
+═════════════════════════════════════════════════════
+Cable size:        20-22 AWG (0.5-0.75mm²)
+Type:              Twisted pair recommended
+Insulation:        300V
+Connectors:        Right-angle JST or direct solder
+Maximum distance:  3m (recommended < 1m)
+Termination:       4.7k pull-up on data line
+
+Wiring:
+  GND ─[22 AWG black]─→ DS18B20 pin 1
+  DATA ─[22 AWG white, twisted]─→ DS18B20 pin 2
+  +3.3V ─[22 AWG red]─→ DS18B20 pin 3
+  [4.7k pull-up between DATA and +3.3V]
+
+
+I2C (LCD Module):
+═════════════════════════════════════════════════════
+Cable size:        20-22 AWG (0.5-0.75mm²)
+Type:              Twisted pair
+Insulation:        300V
+Connectors:        4-pin JST connector
+Maximum distance:  1-3m (slower clock if longer)
+Pull-ups:          4.7k on both SDA and SCL
+
+Wiring:
+  GND ─[22 AWG black]─→ LCD GND
+  +5V ─[22 AWG red]─→ LCD VCC
+  SDA ─[22 AWG white, twisted]─→ LCD SDA
+  SCL ─[22 AWG yellow, twisted]─→ LCD SCL
+
+
+USB Serial Debug (Optional):
+═════════════════════════════════════════════════════
+Cable:             Standard USB 2.0 cable (up to 5m)
+Data rate:         115200 baud
+Chips:             CH340 or FTDI (already on DevKit)
+Driver:            Auto-detect on modern OS
+
+
+CONNECTOR TYPES (Recommended):
+═════════════════════════════════════════════════════
+
+High-current (Battery side):
+  ├─ XT90 (90A rated) - Compact, secure
+  ├─ Anderson PP45 (45A rated) - Heavy duty
+  ├─ Deans T-plug - Compact, lower cost
+  └─ Banana plugs - Large 4mm type for 30A
+
+Signal (Sensor side):
+  ├─ JST PH 2.0mm - Standard, durable
+  ├─ Dupont 2.54mm - Breadboard compatible
+  ├─ Molex KK series - Industrial
+  └─ Direct solder - Most reliable
+
+
+COLOR CODING (Standard):
+═════════════════════════════════════════════════════
++5V or Power:      RED
+GND or Ground:     BLACK
+Signal/Data:       WHITE, YELLOW, ORANGE (vary per use)
+OneWire Data:      WHITE (twisted with BLACK for GND)
+I2C SDA:           WHITE
+I2C SCL:           YELLOW
