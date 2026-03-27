@@ -1,0 +1,179 @@
+┌─────────────────────────────────────────────────────────────────┐
+│                  SMART CHARGER - SCHEMATIC DETAIL               │
+└─────────────────────────────────────────────────────────────────┘
+
+
+SECTION A: ACS758 CURRENT SENSOR
+═════════════════════════════════════════════════════════════════
+
+    Battery Output (0-30A)
+    ─────────────┬─────────────
+                 │
+           ┌─────┴─────┐
+           │  ACS758   │
+           │  IC       │    Pins (SOIC-8):
+        [+]│┌────────┐ │    1: IP+ (High current path +)
+         ──┤│        │ │    2: GND
+        [-]││ SOIC-8 │ │    3: IP- (High current path -)
+         ──┤│        │ │    4: GND
+           │└────────┘ │    5: VOUT (Signal output)
+           │  [5]      │    6: GND
+           │   ├─────[100nF]───GND
+           │   │
+           │   └─[10µF]───GND  (Bulk filter)
+           │   │
+           │   └─[To ADC pin 34]
+           │
+           ├─ +5V [from USB]
+           │
+           └─ GND
+           
+    At 0A:  VOUT = 2.5V
+    At +15A: VOUT = 2.5V + (15 × 0.04) = 3.1V
+    At +30A: VOUT = 2.5V + (30 × 0.04) = 3.7V
+    At -30A: VOUT = 2.5V - (30 × 0.04) = 1.3V
+
+
+SECTION B: VOLTAGE DIVIDER
+═════════════════════════════════════════════════════════════════
+
+    Boost Output (12-90V)
+    ─────────────┬──────────────
+                 │
+              [R1]  1.7M Ω 1/2W
+              (Metal film)
+                 │
+                 ├─ VOUT ──[100nF]──GND
+                 │          ──[10µF]──GND
+                 │          ──[1M pull-down]──GND
+                 │
+                 ├──────→ [To ADC pin 35]
+                 │
+              [R2]  100k Ω 1/4W
+              (Metal film)
+                 │
+                GND
+
+
+    Voltage divider calculation:
+    ───────────────────────────
+    VOUT = VIN × R2/(R1+R2)
+    VOUT = VIN × 100k/(1700k+100k)
+    VOUT = VIN / 18
+    
+    At 12V:  VOUT = 12/18 = 0.667V
+    At 48V:  VOUT = 48/18 = 2.667V
+    At 90V:  VOUT = 90/18 = 5.000V
+    
+    Perfect mapping to ADC (0-5V)!
+    
+    ⚠️  Important:
+    - Use 1% tolerance resistors (metal film)
+    - Place resistors close to ADC input
+    - Add 100nF bypass cap right at ADC pin
+
+
+SECTION C: DS18B20 TEMPERATURE SENSOR
+═════════════════════════════════════════════════════════════════
+
+    From Charger Heatsink / PCB
+                 │
+              (Sensor)
+                 │
+         ┌───────┼───────┐
+         │       │       │
+        GND     DATA    +3.3V
+         │       │       │
+         │       │     [+3.3V rail]
+         │       │
+         │      [R Pull-up]  4.7kΩ
+         │       │
+         │       └───────→ [GPIO 32 OneWire]
+         │
+        GND
+
+
+    OneWire Protocol:
+    ────────────────
+    - Single wire data line
+    - Open-drain with pull-up
+    - Slave addresses unique per chip
+    - Temperature resolution: 0.0625°C
+    - Conversion time: ~750ms
+    - Range: -55°C to +125°C
+
+
+SECTION D: LCD I2C DISPLAY
+═════════════════════════════════════════════════════════════════
+
+    LCD 16x2 Module + I2C Expander (PCF8574)
+    ────────────────────────────────────────
+    
+    [LCD Display]      [I2C Module]
+    │ │ │ │ │ │ │ │    ┌──────────┐
+    │ │ │ │ │ │ │ │    │PCF8574A  │
+    │ │ │ │ │ │ │ │    │I2C Module│
+    └─┴─┴─┴─┴─┴─┴─┘    └──────────┘
+    1 │ │ │ │ │ │ │           │
+    G ├─┴─┴─┴─┴─┴─┴───GND─────┤ GND
+    N │ │ │ │ │ │ │        │
+    D │ │ │ │ │ │ │      SDA ├─[4.7k pull-up]─+3.3V
+      │ │ │ │ │ │ │        │
+    V │ │ │ │ │ │ │      SCL ├─[4.7k pull-up]─+3.3V
+    C │ │ │ │ │ │ │        │
+    C ├─┴─┴─┴─┴─┴─┴───+5V────┤ VCC
+      │ │ │ │ │ │ │        │
+      │ │ │ │ │ │ │    SDA ──→ ESP32 GPIO 21
+      │ │ │ │ │ │ │        │
+    S │ │ │ │ │ │ │    SCL ──→ ESP32 GPIO 22
+    D │ │ │ │ │ │ │
+    A ├─┴─┴─┴─┴─┴─┴───SDA────
+      │ │ │ │ │ │ │
+    S │ │ │ │ │ │ │
+    C │ │ │ │ │ │ │
+    L ├─┴─┴─┴─┴─┴─┴───SCL────
+      │ │ │ │ │ │ │
+    
+    
+    Default I2C Address: 0x27 (or 0x3F depending on jumpers)
+    
+    Display Output (16x2):
+    ─────────────────────
+    [Line 0] V: 48.5  I: 15.2
+    [Line 1] P: 737W  T:42.5C
+
+
+SECTION E: ESP32 PIN MAPPING
+═════════════════════════════════════════════════════════════════
+
+    ┌─────────────────────────────────────┐
+    │         ESP32 DEVKIT V4              │
+    │                                      │
+    │  ★ Power Rails:                      │
+    │  ├─ GND   [GND]  (Multiple pins)    │
+    │  ├─ +5V   [5V]   (USB)              │
+    │  └─ +3.3V [3V3]  (LDO out)          │
+    │                                      │
+    │  ★ Analog Inputs (ADC1):             │
+    │  ├─ GPIO 34 [ADC1_CH6] ← ACS758     │
+    │  ├─ GPIO 35 [ADC1_CH7] ← V divider  │
+    │  ├─ GPIO 32 [OneWire]  ← DS18B20    │
+    │  └─ GPIO 33 [ADC1_CH5] (spare)      │
+    │                                      │
+    │  ★ I2C Interface:                    │
+    │  ├─ GPIO 21 [SDA] ← LCD module      │
+    │  └─ GPIO 22 [SCL] ← LCD module      │
+    │                                      │
+    │  ★ Debug Serial:                     │
+    │  ├─ GPIO 1  [TX0] → PC (debug)      │
+    │  └─ GPIO 3  [RX0] ← PC (debug)      │
+    │                                      │
+    │  ★ Future Expansion:                 │
+    │  ├─ GPIO 13, 12, 14, 26, 25 (spare)│
+    │  ├─ GPIO 27 (relay control, unused) │
+    │  └─ GPIO 2  (LED indicator)         │
+    │                                      │
+    │  ★ WiFi/BLE:                        │
+    │  └─ Built-in antennas               │
+    │                                      │
+    └─────────────────────────────────────┘
