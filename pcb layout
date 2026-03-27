@@ -1,0 +1,75 @@
+┌─────────────────────────────────────────────────────┐
+│         Suggested PCB Layout (Top View)              │
+└─────────────────────────────────────────────────────┘
+
+        ESP32 Module
+      ┌──────────────┐
+      │              │ GPIO 34 ─→ [ACS758 area]
+      │              │ GPIO 35 ─→ [Divider area]
+      │   ESP32      │ GPIO 32 ─→ [Temp sensor]
+      │   DevKit     │ GPIO 21/22 ─→ [LCD I2C]
+      │              │ GND ─→ [Common ground plane]
+      │              │ +5V ─→ [Power rails]
+      └──────────────┘
+
+
+     ┌──────────────────────────────────┐
+     │    ACS758 Current Sensor Area    │
+     │                                  │
+     │  [ACS758 IC]  ─┬─ 100nF ceramic  │
+     │                ├─ 10µF electro   │
+     │                └─→ [To GPIO 34]  │
+     │                                  │
+     └──────────────────────────────────┘
+
+
+     ┌──────────────────────────────────┐
+     │    Voltage Divider Area          │
+     │                                  │
+     │  [R1: 1.7M]                      │
+     │      │                           │
+     │      ├─ 100nF ─┐                │
+     │      │         ├─→ [To GPIO 35] │
+     │      ├─ 10µF ──┘                │
+     │      │                           │
+     │  [R2: 100k]                      │
+     │      │                           │
+     │     GND                          │
+     │                                  │
+     └──────────────────────────────────┘
+
+
+     ┌──────────────────────────────────┐
+     │    Temp Sensor Area              │
+     │                                  │
+     │  [DS18B20]                       │
+     │      │                           │
+     │      ├─ [4.7k pull-up]           │
+     │      │      └→ +3.3V             │
+     │      └─→ [To GPIO 32]            │
+     │                                  │
+     └──────────────────────────────────┘
+
+
+     ┌──────────────────────────────────┐
+     │    LCD I2C Module                │
+     │                                  │
+     │  [LCD Module]                    │
+     │      │                           │
+     │  SDA ├─ [4.7k pull-up]  +3.3V    │
+     │  SCL ├─ [4.7k pull-up]  +3.3V    │
+     │      │                           │
+     │      ├─→ [GPIO 21/22]            │
+     │                                  │
+     └──────────────────────────────────┘
+
+
+★ KEY LAYOUT RULES:
+───────────────────
+✓ Keep ADC inputs away from high-current paths
+✓ Use short, direct traces from sensors to ADC
+✓ Ground plane under all ICs
+✓ Bypass caps close to power pins
+✓ Twisted pair for OneWire if cable > 1m
+✓ I2C pull-ups close to ESP32
+✓ Separate analog and digital grounds (if possible)
