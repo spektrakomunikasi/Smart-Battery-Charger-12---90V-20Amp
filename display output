@@ -1,0 +1,8 @@
+┌─────────────────────────┐
+│ V: 48.5  I: 15.2        │  (Real-time values)
+│ P: 737W  T:42.5C        │  (Power = V × I, Temperature)
+└─────────────────────────┘
+
+Updates every 500ms
+Polling sensors every 100ms
+Temperature every 2 seconds
